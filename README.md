@@ -1,7 +1,10 @@
+# CS2KZ Mapping
+
 Usage:
-```
+
+```pwsh
 py -m pip install -r requirements.txt
-py verify.py (Optional, if gameinfo.gi is corrupt)
+py verify.py # (Optional, if gameinfo.gi is corrupt)
 py setup.py
 py run-mapping.py
 ```
