@@ -1,4 +1,6 @@
-# CS2KZ Mapping
+# CS2 tools
+
+FKZ fork of cs2kz-mapping with additional fkz specific modifications for dev purposes
 
 Usage:
 
