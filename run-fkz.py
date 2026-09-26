@@ -265,8 +265,9 @@ def launch(cs2, map_name, extra_args):
         args = [
             exe,
             "-insecure",
-            "+sv_cheats 1",
+            "+sv_cheats true",
             "+kz_ac_autokick 0",
+            "+kz_profile_clantag_enabled false",
             "+map",
             map_name,
         ] + extra_args
@@ -299,7 +300,7 @@ def main():
         default=os.environ.get("FKZ_REPOS", os.path.join(here, "..", ".fkz")),
         help="folder holding the plugin repos (default: $FKZ_REPOS or ../.fkz)",
     )
-    parser.add_argument("--map", default="de_dust2")
+    parser.add_argument("--map", default="de_nuke")
     parser.add_argument(
         "--no-build", action="store_true", help="deploy the existing build output"
     )
