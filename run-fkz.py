@@ -22,7 +22,6 @@ import psutil
 
 from common import backup_files, get_cs2_path, modify_gameinfo, restore_files
 
-# Short name -> repo folder under --repos.
 PLUGINS = {
     "admin": "mm-cs2admin",
     "menus": "mm-cs2menus",
@@ -32,7 +31,7 @@ PLUGINS = {
 }
 # The whitelist kicks a host who isn't on it, so it's opt-in.
 DEFAULT_PLUGINS = ["admin", "menus", "rtv", "fkz-api"]
-# Plugins with a "Database" block in cfg/<dir>/core.cfg: name -> (cfg dir, SQLite path the code falls back to).
+# Plugins with a "Database" block in cfg/<dir>/core.cfg: name -> (cfg dir, code default SQLite path).
 DATABASE_BLOCKS = {
     "admin": ("cs2admin", "addons/cs2admin/data/cs2admin.db"),
     "menus": ("cs2menus", "addons/cs2menus/cs2menus.db"),
@@ -75,7 +74,7 @@ def copy_tree(src, dst, overwrite=True, suffix=None):
 
 
 def sync_mm_utils(repos, repo):
-    # Plugins build against their own vendor/mm-utils checkout, so standalone edits need copying in.
+    # Plugins build against their own vendor/mm-utils.
     src = os.path.join(repos, "mm-utils")
     dst = os.path.join(repo, "vendor", "mm-utils")
     shutil.copytree(src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".git"))
@@ -105,7 +104,7 @@ def deploy(repo, csgo, reset_configs):
     print(f"  addons: {copied} files")
     cfg = os.path.join(package, "cfg")
     if os.path.isdir(cfg):
-        # Local configs usually carry test edits (admins, keys), so only missing ones are added.
+        # Keeps local test edits, only missing configs are added.
         copied, kept = copy_tree(
             cfg, os.path.join(csgo, "cfg"), overwrite=reset_configs
         )
@@ -137,7 +136,7 @@ def compile_menus_layout(cs2, repo):
         print(result.stdout[-3000:])
         fail("panorama compile failed")
     print(f"  panorama: {summary.group(1)} compiled")
-    # Loose files under game/csgo load in an insecure listen server, the same trick setup.py uses for cs2kz's addon.
+    # Loose files load in an insecure listen server, like setup.py's cs2kz addon.
     compiled = os.path.join(cs2, "game", "csgo_addons", MENUS_ADDON, "panorama")
     copied, _ = copy_tree(
         compiled, os.path.join(cs2, "game", "csgo", "panorama"), suffix="_c"
@@ -225,7 +224,7 @@ def reset_databases(csgo, names):
 
 
 def recover_gameinfo(gameinfo, backup, core_gameinfo, core_backup):
-    # A run that died before restoring leaves Metamod in gameinfo, and backing that up would lose the original.
+    # A crashed run leaves Metamod in gameinfo, and backing that up would lose the original.
     with open(gameinfo, encoding="utf-8") as f:
         if METAMOD_LINE not in f.read():
             return
@@ -351,7 +350,7 @@ def main():
             compile_menus_layout(cs2, repo)
             disable_menus_mount(csgo)
 
-    # After deploying, so a freshly added cfg already decides the path.
+    # After deploying, so a fresh cfg decides the path.
     if args.reset_db is not None:
         print("== databases")
         reset_databases(csgo, args.reset_db or DATABASES)
