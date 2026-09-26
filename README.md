@@ -18,3 +18,19 @@ When running this for the first time, you need to run `setup` and `verify` if yo
 Alternatively, you can use `run-listen` to run CS2KZ without mapping tools, or use `run-dedicated` (launches a CS2KZ server) and `run-insecure` to run the server and the client separately.
 
 Other players can connect to this server by connect to the anonymous ServerSteamID found in the server console, for example `SV:  ServerSteamID=[A:1:1234567890:12345]`
+
+## FKZ plugins
+
+`run-fkz` builds the FKZ Metamod plugins from their local repos, copies them into the game, compiles the cs2menus panorama layout and starts an insecure listen server:
+
+```pwsh
+py run-fkz.py                         # admin, menus, rtv and fkz-api on de_dust2
+py run-fkz.py --map kz_grotto -p menus
+py run-fkz.py --no-build --no-launch  # redeploy only
+py run-fkz.py --reset-db              # delete every SQLite database first (admin fkz-api kz menus whitelist), or name some
+py run-fkz.py -- -dev                 # extra cs2.exe arguments after --
+```
+
+It expects the repos next to each other in `../.fkz` (or `--repos` / `FKZ_REPOS`), Metamod installed by `setup.py`, and CS2 closed.
+The layout needs the CS2 Workshop Tools for `resourcecompiler.exe`, and is placed loose under `game/csgo/panorama`, so the local copy is tested without publishing to the Workshop.
+Local configs under `game/csgo/cfg` are only added when missing (`--reset-configs` overwrites them), and cs2menus' `MountAddon` is set to 0 so the published addon doesn't shadow the local layout.
