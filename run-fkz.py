@@ -75,6 +75,15 @@ def copy_tree(src, dst, overwrite=True, suffix=None):
     return copied, kept
 
 
+def remove_tree(path):
+    try:
+        shutil.rmtree(path)
+    except FileNotFoundError:
+        pass
+    except OSError as e:
+        fail(f"can't clear {path} ({e}), close CS2 and the Workshop Tools first")
+
+
 def sync_mm_utils(repos, repo):
     # Plugins build against their own vendor/mm-utils.
     src = os.path.join(repos, "mm-utils")
@@ -123,8 +132,16 @@ def compile_menus_layout(cs2, repo):
         )
         return
     content = os.path.join(cs2, "content", "csgo_addons", MENUS_ADDON, "panorama")
-    shutil.copytree(
-        os.path.join(repo, "workshop", "panorama"), content, dirs_exist_ok=True
+    addon = os.path.join(cs2, "game", "csgo_addons", MENUS_ADDON)
+    compiled = os.path.join(addon, "panorama")
+    # Mirrors the repo, so the game side addon folder is exactly what the Workshop gets, no files left from renames.
+    for stale in (content, compiled):
+        remove_tree(stale)
+    shutil.copytree(os.path.join(repo, "workshop", "panorama"), content)
+    os.makedirs(addon, exist_ok=True)
+    # The layouts derive from cs2kz's (AGPL-3.0), the license ships with the addon.
+    shutil.copy2(
+        os.path.join(repo, "workshop", "LICENSE"), os.path.join(addon, "LICENSE.txt")
     )
     result = subprocess.run(
         [compiler, "-nop4", "-f", "-r", "-i", os.path.join(content, "*")],
@@ -139,10 +156,11 @@ def compile_menus_layout(cs2, repo):
         fail("panorama compile failed")
     print(f"  panorama: {summary.group(1)} compiled")
     # Loose files load in an insecure listen server, like setup.py's cs2kz addon.
-    compiled = os.path.join(cs2, "game", "csgo_addons", MENUS_ADDON, "panorama")
-    copied, _ = copy_tree(
-        compiled, os.path.join(cs2, "game", "csgo", "panorama"), suffix="_c"
-    )
+    # Only our own custom_game/cs2menus folders are cleared, other addons deploy loose files here too.
+    loose = os.path.join(cs2, "game", "csgo", "panorama")
+    for kind in ("layout", "styles", "images"):
+        remove_tree(os.path.join(loose, kind, "custom_game", MENUS_ADDON))
+    copied, _ = copy_tree(compiled, loose, suffix="_c")
     print(f"  panorama: {copied} files deployed loose")
 
 
