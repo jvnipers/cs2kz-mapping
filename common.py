@@ -8,7 +8,7 @@ import vdf
 import shutil
 
 GAMEINFO_BASE_URL = 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/refs/heads/master/'
-GAMEINFO_FILE_PATHS = [os.path.join('game', 'csgo', 'gameinfo.gi'), os.path.join('game', 'csgo_core', 'gameinfo.gi')]
+GAMEINFO_FILE_PATHS = [os.path.join('game', 'csgo', 'gameinfo.gi')]
 
 def is_admin():
     try:
@@ -94,32 +94,22 @@ def get_cs2_path():
         return os.path.join(library_path, 'steamapps', 'common', vdf.load(file)['AppState']['installdir'])
     print("Failed to get CS2 path.")
 
-def modify_gameinfo(gameinfo_path, core_gameinfo_path):
+def modify_gameinfo(gameinfo_path):
     with open(gameinfo_path, 'r') as f:
         lines = f.readlines()
 
-    # Insert metamod into gameinfo config
+    # Insert metamod and remove CustomNavBuild
     target_line = "			Game	csgo\n"
     new_line = "			Game	csgo/addons/metamod\n"
     modified_lines = []
+    skip = 0
 
     for line in lines:
         if line == target_line:
             modified_lines.append(new_line)
-        modified_lines.append(line)
-
-    with open(gameinfo_path, 'w') as f:
-        f.writelines(modified_lines)
-
-
-    with open(core_gameinfo_path, 'r') as f:
-        other_file_lines = f.readlines()
-
-    # Find and remove CustomNavBuild
-    modified_lines = []
-    skip = 0
-
-    for line in other_file_lines:
+        # The csgo_core merge put SteamAppId 710 here. It reaches Metamod's app id lookup and breaks Steam init under -game.
+        if line.strip().startswith('SteamAppId'):
+            continue
         if 'CustomNavBuild' in line:
             skip = 5  # Skip this line and the next 4 lines
         if skip > 0:
@@ -127,7 +117,7 @@ def modify_gameinfo(gameinfo_path, core_gameinfo_path):
         else:
             modified_lines.append(line)
 
-    with open(core_gameinfo_path, 'w') as f:
+    with open(gameinfo_path, 'w') as f:
         f.writelines(modified_lines)
 
 def modify_gameinfo_flat_file_addons(gameinfo_path):
@@ -165,15 +155,10 @@ def modify_gameinfo_p2p(gameinfo_path):
 def backup_files(path):
     gameinfo_path = os.path.join(path, 'game', 'csgo', 'gameinfo.gi')
     backup_path = os.path.join(path, 'game', 'csgo', 'gameinfo.gi.bak')
-    
-    core_gameinfo_path = os.path.join(path, 'game', 'csgo_core', 'gameinfo.gi')
-    core_backup_path = os.path.join(path, 'game', 'csgo_core', 'gameinfo.gi.bak')
-    
-    shutil.copyfile(gameinfo_path, backup_path)
-    shutil.copyfile(core_gameinfo_path, core_backup_path)
-    
-    return gameinfo_path, backup_path, core_gameinfo_path, core_backup_path
 
-def restore_files(backup_path, gameinfo_path, core_backup_path, core_gameinfo_path):
+    shutil.copyfile(gameinfo_path, backup_path)
+
+    return gameinfo_path, backup_path
+
+def restore_files(backup_path, gameinfo_path):
     shutil.move(backup_path, gameinfo_path)
-    shutil.move(core_backup_path, core_gameinfo_path)

@@ -105,34 +105,24 @@ if __name__ == '__main__':
         exit()
 
     gameinfo_relative_path = os.path.join('game', 'csgo', 'gameinfo.gi')
-    gameinfo_core_relative_path = os.path.join('game', 'csgo_core', 'gameinfo.gi')
     gameinfo_path = os.path.join(path, gameinfo_relative_path)
-    gameinfo_core_path = os.path.join(path, gameinfo_core_relative_path)
 
     # Backup original gameinfo files
     backup_path = os.path.join(path, 'game', 'csgo', 'gameinfo_original.gi')
-    backup_core_path = os.path.join(path, 'game', 'csgo_core', 'gameinfo_original.gi')
     temp_path = os.path.join(path, 'game', 'csgo', 'gameinfo_temp.gi')
-    temp_core_path = os.path.join(path, 'game', 'csgo_core', 'gameinfo_temp.gi')
 
     recover_gameinfo(path, gameinfo_relative_path, backup_path, temp_path, 'csgo/gameinfo.gi')
-    recover_gameinfo(path, gameinfo_core_relative_path, backup_core_path, temp_core_path, 'csgo_core/gameinfo.gi')
 
     print(f"Backing up original gameinfo from '{gameinfo_path}' to '{backup_path}'...")
     shutil.move(gameinfo_path, backup_path)
-    print(f"Backing up original gameinfo from '{gameinfo_core_path}' to '{backup_core_path}'...")
-    shutil.move(gameinfo_core_path, backup_core_path)
     # Create temp gameinfos and apply modifications to them instead of the original ones to avoid issues with cs2.exe locking the files.
     print(f"Creating temp gameinfo at '{temp_path}' from backup '{backup_path}'...")
     shutil.copyfile(backup_path, temp_path)
-    print(f"Creating temp gameinfo at '{temp_core_path}' from backup '{backup_core_path}'...")
-    shutil.copyfile(backup_core_path, temp_core_path)
 
 
     # Create a symlink from the temp gameinfo to the original location so that when cs2.exe locks the file, it locks the temp one instead of the original one.
     create_symlink_or_elevate(temp_path, gameinfo_path)
-    create_symlink_or_elevate(temp_core_path, gameinfo_core_path)
-    modify_gameinfo(gameinfo_path, gameinfo_core_path)
+    modify_gameinfo(gameinfo_path)
 
 
     cs2_tools_path = os.path.join(path, 'game', 'bin', 'win64')
@@ -143,13 +133,10 @@ if __name__ == '__main__':
     else:
         try:
             os.remove(temp_path)
-            os.remove(temp_core_path)
         except OSError as e:
             print(f"Error occurred while removing temp files: {e}")
     # Restore original gameinfo files
     os.remove(gameinfo_path)
-    os.remove(gameinfo_core_path)
     shutil.move(backup_path, gameinfo_path)
-    shutil.move(backup_core_path, gameinfo_core_path)
     print('Closing in 3 seconds...')
     time.sleep(3)

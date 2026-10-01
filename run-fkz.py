@@ -243,7 +243,7 @@ def reset_databases(csgo, names):
         )
 
 
-def recover_gameinfo(gameinfo, backup, core_gameinfo, core_backup):
+def recover_gameinfo(gameinfo, backup):
     # A crashed run leaves Metamod in gameinfo, and backing that up would lose the original.
     with open(gameinfo, encoding="utf-8") as f:
         if METAMOD_LINE not in f.read():
@@ -253,7 +253,7 @@ def recover_gameinfo(gameinfo, backup, core_gameinfo, core_backup):
             f"{gameinfo} still loads Metamod from an earlier run and has no backup. Run verify.py first."
         )
     print("Restoring gameinfo left modified by an earlier run...")
-    restore_files(backup, gameinfo, core_backup, core_gameinfo)
+    restore_files(backup, gameinfo)
 
 
 def wait_for_dll(dll, timeout):
@@ -275,11 +275,10 @@ def wait_for_dll(dll, timeout):
 def launch(cs2, map_name, extra_args):
     csgo = os.path.join(cs2, "game", "csgo")
     gameinfo = os.path.join(csgo, "gameinfo.gi")
-    core_gameinfo = os.path.join(cs2, "game", "csgo_core", "gameinfo.gi")
-    recover_gameinfo(gameinfo, gameinfo + ".bak", core_gameinfo, core_gameinfo + ".bak")
-    gameinfo, backup, core_gameinfo, core_backup = backup_files(cs2)
+    recover_gameinfo(gameinfo, gameinfo + ".bak")
+    gameinfo, backup = backup_files(cs2)
     try:
-        modify_gameinfo(gameinfo, core_gameinfo)
+        modify_gameinfo(gameinfo)
         exe = os.path.join(cs2, "game", "bin", "win64", "cs2.exe")
         args = [
             exe,
@@ -296,7 +295,7 @@ def launch(cs2, map_name, extra_args):
         if not wait_for_dll("metamod.2.cs2.dll", 120):
             print("Metamod never loaded, check the game console.")
     finally:
-        restore_files(backup, gameinfo, core_backup, core_gameinfo)
+        restore_files(backup, gameinfo)
         print("Restored the original gameinfo.")
         if os.path.exists("steam_appid.txt"):
             os.remove("steam_appid.txt")

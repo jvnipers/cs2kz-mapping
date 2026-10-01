@@ -60,7 +60,7 @@ def download_cs2kz(cs2_dir: str):
     response = requests.get("https://raw.githubusercontent.com/KZGlobalTeam/cs2kz-metamod/refs/heads/master/mapping_api/game/csgo_core/csgo_internal.fgd")
     if response.status_code != 200:
         raise Exception(f"Failed to fetch mapping API FGD: {response.status_code} - {response.text}")
-    path = os.path.join(cs2_dir, "game", "csgo_core")
+    path = os.path.join(cs2_dir, "game", "csgo")
     if not os.path.exists(path):
         os.makedirs(path)
     with open(os.path.join(path, "csgo_internal.fgd"), "wb") as file:
