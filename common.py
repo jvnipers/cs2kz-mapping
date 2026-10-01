@@ -107,9 +107,6 @@ def modify_gameinfo(gameinfo_path):
     for line in lines:
         if line == target_line:
             modified_lines.append(new_line)
-        # The csgo_core merge put SteamAppId 710 here. It reaches Metamod's app id lookup and breaks Steam init under -game.
-        if line.strip().startswith('SteamAppId'):
-            continue
         if 'CustomNavBuild' in line:
             skip = 5  # Skip this line and the next 4 lines
         if skip > 0:
