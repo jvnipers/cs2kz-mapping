@@ -137,7 +137,16 @@ def compile_menus_layout(cs2, repo):
     # Mirrors the repo, so the game side addon folder is exactly what the Workshop gets, no files left from renames.
     for stale in (content, compiled):
         remove_tree(stale)
-    shutil.copytree(os.path.join(repo, "workshop", "panorama"), content)
+    # A minimal copy rather than the repo's files, so what's compiled here is what a release ships.
+    minified = subprocess.run(
+        [sys.executable, os.path.join(repo, "workshop", "tools", "minify.py"), content],
+        capture_output=True,
+        text=True,
+    )
+    if minified.returncode != 0:
+        print(minified.stdout + minified.stderr)
+        fail("panorama minify failed")
+    print(f"  panorama: {minified.stdout.strip()}")
     os.makedirs(addon, exist_ok=True)
     # The layouts derive from cs2kz's (AGPL-3.0), the license ships with the addon.
     shutil.copy2(
