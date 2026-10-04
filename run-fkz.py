@@ -28,16 +28,16 @@ PLUGINS = {
     "rtv": "mm-cs2rockthevote",
     "whitelist": "mm-cs2whitelist",
     "fkz-api": "mm-fkz-api",
-    "ws": "mm-cs2weaponskins",
+    "dressup": "cs2dressup",
 }
 # The whitelist kicks a host who isn't on it, so it's opt-in.
-DEFAULT_PLUGINS = ["admin", "menus", "rtv", "fkz-api", "ws"]
+DEFAULT_PLUGINS = ["admin", "menus", "rtv", "fkz-api", "dressup"]
 # Plugins with a "Database" block in cfg/<dir>/core.cfg: name -> (cfg dir, code default SQLite path).
 DATABASE_BLOCKS = {
     "admin": ("cs2admin", "addons/cs2admin/data/cs2admin.db"),
     "menus": ("cs2menus", "addons/cs2menus/cs2menus.db"),
     "whitelist": ("cs2whitelist", "addons/cs2whitelist/whitelist.db"),
-    "ws": ("cs2ws", "addons/cs2weaponskins/cs2weaponskins.db"),
+    "dressup": ("cs2dressup", "addons/cs2dressup/cs2dressup.db"),
 }
 # rtv keeps no database.
 DATABASES = sorted(list(DATABASE_BLOCKS) + ["fkz-api", "kz"])
