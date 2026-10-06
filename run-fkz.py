@@ -85,9 +85,9 @@ def remove_tree(path):
 
 
 def sync_mm_utils(repos, repo):
-    # Plugins build against their own vendor/mm-utils.
+    # Plugins build against their own mm-utils submodule.
     src = os.path.join(repos, "mm-utils")
-    dst = os.path.join(repo, "vendor", "mm-utils")
+    dst = os.path.join(repo, "mm-utils")
     shutil.copytree(src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".git"))
     print(f"  synced mm-utils into {dst}")
 
@@ -337,7 +337,7 @@ def main():
     parser.add_argument(
         "--sync-mm-utils",
         action="store_true",
-        help="copy the standalone mm-utils into each plugin's vendor/mm-utils first",
+        help="copy the standalone mm-utils into each plugin's mm-utils submodule first",
     )
     parser.add_argument(
         "--reset-configs",
