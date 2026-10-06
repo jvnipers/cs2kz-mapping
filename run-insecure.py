@@ -7,7 +7,7 @@ if __name__ == '__main__':
         time.sleep(3)
         exit()
 
-    gameinfo_path, backup_path, core_gameinfo_path, core_backup_path = backup_files(path)
+    gameinfo_path, backup_path = backup_files(path)
 
     modify_gameinfo_flat_file_addons(gameinfo_path)
 
@@ -17,4 +17,4 @@ if __name__ == '__main__':
 
     time.sleep(1)
 
-    restore_files(backup_path, gameinfo_path, core_backup_path, core_gameinfo_path)
+    restore_files(backup_path, gameinfo_path)
