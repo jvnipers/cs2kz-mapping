@@ -324,8 +324,8 @@ def main():
     )
     parser.add_argument(
         "--repos",
-        default=os.environ.get("FKZ_REPOS", os.path.join(here, "..", ".fkz")),
-        help="folder holding the plugin repos (default: $FKZ_REPOS or ../.fkz)",
+        default=os.environ.get("FKZ_REPOS", os.path.join(here, "..")),
+        help="folder holding the plugin repos (default: $FKZ_REPOS or ..)",
     )
     parser.add_argument("--map", default="de_nuke")
     parser.add_argument(

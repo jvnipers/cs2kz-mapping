@@ -31,6 +31,6 @@ py run-fkz.py --reset-db              # delete every SQLite database first (admi
 py run-fkz.py -- -dev                 # extra cs2.exe arguments after --
 ```
 
-It expects the repos next to each other in `../.fkz` (or `--repos` / `FKZ_REPOS`), Metamod installed by `setup.py`, and CS2 closed.
+It expects the repos next to this one in `..` (or `--repos` / `FKZ_REPOS`), Metamod installed by `setup.py`, and CS2 closed.
 The layout needs the CS2 Workshop Tools for `resourcecompiler.exe`, and is placed loose under `game/csgo/panorama`, so the local copy is tested without publishing to the Workshop.
 Local configs under `game/csgo/cfg` are only added when missing (`--reset-configs` overwrites them), and cs2menus' `MountAddon` is set to 0 so the published addon doesn't shadow the local layout.
