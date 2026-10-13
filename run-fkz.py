@@ -32,15 +32,32 @@ PLUGINS = {
 }
 # The whitelist kicks a host who isn't on it, so it's opt-in.
 DEFAULT_PLUGINS = ["admin", "menus", "rtv", "fkz-api", "dressup"]
-# Plugins with a "Database" block in cfg/<dir>/core.cfg: name -> (cfg dir, code default SQLite path).
+# Plugins with a "Database" block in cfg/<dir>/core.cfg: name -> (cfg dir, code default SQLite path, default of older versions).
 DATABASE_BLOCKS = {
-    "admin": ("cs2admin", "addons/cs2admin/data/cs2admin.db"),
-    "menus": ("cs2menus", "addons/cs2menus/cs2menus.db"),
-    "whitelist": ("cs2whitelist", "addons/cs2whitelist/whitelist.db"),
-    "dressup": ("cs2dressup", "addons/cs2dressup/cs2dressup.db"),
+    "admin": ("cs2admin", "addons/cs2admin/data/cs2admin.db", None),
+    "menus": (
+        "cs2menus",
+        "addons/cs2menus/data/cs2menus.db",
+        "addons/cs2menus/cs2menus.db",
+    ),
+    "whitelist": (
+        "cs2whitelist",
+        "addons/cs2whitelist/data/cs2whitelist.db",
+        "addons/cs2whitelist/whitelist.db",
+    ),
+    "dressup": (
+        "cs2dressup",
+        "addons/cs2dressup/data/cs2dressup.db",
+        "addons/cs2dressup/cs2dressup.db",
+    ),
+    "fkz-api": (
+        "fkz-api",
+        "addons/fkz-api/data/fkz-api.db",
+        "addons/fkz-api/data/prefs.sqlite3",
+    ),
 }
 # rtv keeps no database.
-DATABASES = sorted(list(DATABASE_BLOCKS) + ["fkz-api", "kz"])
+DATABASES = sorted(list(DATABASE_BLOCKS) + ["kz"])
 MENUS_ADDON = "cs2menus"
 METAMOD_LINE = "csgo/addons/metamod"
 
@@ -210,22 +227,23 @@ def kv_value(text, key):
 def sqlite_path(csgo, name):
     """The SQLite file a plugin uses per the local config, relative to game/csgo. None when it's on MySQL or has no database."""
     if name in DATABASE_BLOCKS:
-        cfg_dir, default = DATABASE_BLOCKS[name]
+        cfg_dir, default, old_default = DATABASE_BLOCKS[name]
         block = (
             kv_block(read_cfg(csgo, os.path.join(cfg_dir, "core.cfg")), "Database")
             or ""
         )
         if (kv_value(block, "Type") or "sqlite").lower() != "sqlite":
             return None
-        return kv_value(block, "Path") or kv_value(block, "db_path") or default
-    if name == "fkz-api":
-        # Plain cvar lines, and an empty driver disables the database.
-        text = read_cfg(csgo, os.path.join("fkz-api", "core.cfg"))
-        driver = re.search(r'^\s*db_driver\s+"([^"]*)"', text, re.M)
-        database = re.search(r'^\s*db_database\s+"([^"]*)"', text, re.M)
-        if not driver or driver.group(1).lower() != "sqlite":
-            return None
-        return (database and database.group(1)) or "addons/fkz-api/data/prefs.sqlite3"
+        path = kv_value(block, "Path") or kv_value(block, "db_path") or default
+        # The plugins keep using a file at the old default while there is none at the new one.
+        if (
+            path == default
+            and old_default
+            and not os.path.isfile(os.path.join(csgo, path))
+            and os.path.isfile(os.path.join(csgo, old_default))
+        ):
+            return old_default
+        return path
     if name == "kz":
         # cs2kz takes a database name and stores it as addons/cs2kz/data/<name>.sqlite3.
         block = kv_block(read_cfg(csgo, "cs2kz-server-config.txt"), "db")
